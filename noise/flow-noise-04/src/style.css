@@ -1,0 +1,23 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#base {
+  position: relative;
+  background: black;
+}
+
+#canvas1 {
+  position: absolute;
+  top: 0 px;
+  left: 0 px;
+}
+
+#canvas2 {
+  position: absolute;
+  top: 0 px;
+  left: 0 px;
+}
