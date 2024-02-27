@@ -1,0 +1,81 @@
+/**
+ * Simple multiselect
+ * Multiselect을 지정하려면 select 태그이고 multiple 속성이 지정되어야 함.
+ * @Version: 0.2.0
+ * @Author: ospace114@empal.com
+ * @Website: ospace.tistory.com
+ * @Source:
+ */
+
+.msj-options-base {
+	box-sizing: border-box;
+	font-size: 13px;
+}
+/*.msj-options-base > button:focus,*/
+.msj-options-base > button {
+	position: relative;
+	width: 100%;
+	height: 2rem;
+	text-align: left;
+	border: 1px solid #aaa;
+	border-radius: 0;
+	background-color: #fff;
+	white-space: nowrap;
+	font-size: 1rem;
+	outline-offset: -2px;
+	color: #aaa;
+}
+.msj-options-base > button[disabled] {
+	background-color: #e5e9ed;
+	color: #808080;
+	opacity: 0.6;
+}
+.msj-options-base > button:before,
+.msj-options-base > button:after {
+	position: absolute;
+	content: '';
+	width: 0.7em;
+	height: 3px;
+	top: 50%;
+	background: #999;
+}
+.msj-options-base > button:before {
+	/* right: 11px; */
+	right: 9px;
+	border-radius: 2px 1px 1px 2px;
+	transform-origin: 50% 50%;
+	transform: rotate(45deg);
+}
+.msj-options-base > button:after {
+	right: 5px;
+	border-radius: 1px 2px 2px 1px;
+	transform-origin: 50% 50%;
+	transform: rotate(-45deg);
+}
+.msj-options-base > .msj-options {
+	/*position: absolute;*/
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box; /* Firefox, other Gecko */
+	box-sizing: border-box; /* Opera/IE 8+ */
+	overflow-x: hidden;
+	overflow-y: auto;
+	border: 1px solid #aaa;
+	background-color: white;
+	z-index: 2;
+	display: none;
+}
+
+.msj-options-base > .msj-options label {
+	padding: 0px 6px 0px 6px;
+	font-size: 1rem;
+}
+
+.msj-options-base > .msj-options > .msj-search input {
+	width: 100%;
+	font-size: 1rem;
+	border: none;
+	outline: none;
+	padding: 0px 5px 3px 5px;
+	border-radius: 0;
+	border-bottom: 1px groove;
+}
