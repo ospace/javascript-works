@@ -9,6 +9,7 @@
 //Ref: https://github.com/nobleclem/jQuery-MultiSelect/blob/master/jquery.multiselect.js
 
 (function ($) {
+	const NAME = 'multiselect_j';
 	var defaults = {
 		height: '7rem',
 		width: '100%',
@@ -53,16 +54,23 @@
 		this.msj_btn.on('click', function () {
 			self.msj_opt.is(':visible') ? self.msj_opt.hide() : self.msj_opt.show();
 		});
+		this.elem.on('change', ev => {
+			this.elem.val().forEach(it => {
+				let found = this.msj_opt_base.find(`input:checkbox[value=${it}]`);
+				if (found.length && !found.prop('checked')) found.prop('checked', true).trigger('change');
+			});
+		});
 	}
 
 	function multiselect_add(self, text, value) {
+		let opt_label = `msj-opt-${opt_label_for}`;
 		self.msj_opt.append(
 			$('<div/>', { class: 'msj-option' }).append(
-				$('<label/>', { for: 'msj-opt-' + opt_label_for })
+				$('<label/>', { for: opt_label })
 					.append(
-						$('<input/>', { id: 'msj-opt-' + opt_label_for, type: 'checkbox', value: value }).on('change', function () {
+						$('<input/>', { id: opt_label, type: 'checkbox', value }).on('change', function () {
 							self.elem
-								.find('option[value="' + this.value + '"]')
+								.find(`option[value='${this.value}']`)
 								.prop('selected', $(this).prop('checked'))
 								.trigger('change');
 							var checkedVal = self.msj_opt
@@ -81,7 +89,7 @@
 	}
 
 	function select_add(self, text, value) {
-		self.elem.append($('<option/>', { value: value }).text(text));
+		self.elem.append($('<option/>', { value }).text(text));
 	}
 
 	Multiselect.prototype = {
@@ -99,20 +107,20 @@
 		},
 	};
 
-	$.fn.multiselect_j = function (opts) {
+	$.fn[NAME] = function (opts) {
 		var args = arguments;
 		if (undefined == opts || 'object' === typeof opts) {
 			return this.each(function () {
-				if ($.data(this, 'multiselect_j')) return;
-				$.data(this, 'multiselect_j', new Multiselect(this, opts));
+				if ($.data(this, NAME)) return;
+				$.data(this, NAME, new Multiselect(this, opts));
 			});
 		} else if ('string' === typeof opts && 'init' != opts) {
 			this.each(function () {
-				var inst = $.data(this, 'multiselect_j');
+				var inst = $.data(this, NAME);
 				if ('function' === typeof inst[opts]) {
 					inst[opts].apply(inst, Array.prototype.slice.call(args, 1));
 				} else if ('unload' === opts) {
-					$.data(this, 'multiselect_j', null);
+					$.data(this, NAME, null);
 				}
 			});
 		}
