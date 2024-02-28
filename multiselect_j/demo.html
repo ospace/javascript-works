@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>multiselect_j demo</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"
+    />
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <link href="multiselect_j-0.1.0.css" rel="stylesheet" />
+    <script src="multiselect_j-0.1.0.js"></script>
+    <style>
+      html {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body style="background: lightgray">
+    <select id="foo" multiple>
+      <option value="MON">월요일</option>
+      <option value="TUE">화요일</option>
+      <option value="WED">수요일</option>
+      <option value="THU">목요일</option>
+      <option value="FRI">금요일</option>
+      <option value="SAT">토요일</option>
+      <option value="SUN">일요일</option>
+    </select>
+    <script>
+      let obj = $("#foo").multiselect_j();
+      obj.on("change", function () {
+        console.log("changed:", this.value);
+        console.log("value is ", obj.val());
+      });
+    </script>
+  </body>
+</html>
