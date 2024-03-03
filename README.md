@@ -16,5 +16,5 @@ jQuery기반 멀티셀렉터 컨트롤러 라이브러리
 
 ## phaser
 
-HTML5 게임 프레임워크인 phaser의 예제 연습용
-https://phaser.io/
+HTML5 게임 프레임워크인 [phaser](https://phaser.io/)의 예제 연습용
+
