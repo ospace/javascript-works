@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - fluid 01</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div class="wrapper">
+  <div>
+    <button onclick="onAction1()">Action1</button>
+    <button onclick="onAction2()">Action2</button>
+    <button onclick="onAction3()">Action3</button>
+    <button onclick="onAction4()">Action4</button>
+    <button onclick="onAction5()">Action5</button>
+    <button onclick="onAction6()">Action6</button>
+    <button onclick="onAction7()">Action7</button>
+    <button onclick="onAction8()">Action8</button>
+
+    <div style="position: relative; user-select: none">
+      <div style="position: absolute; left: 0px; top: 0px">
+        <canvas id="foreground" width="500px" height="800px"></canvas>
+      </div>
+      <canvas id="background" width="500px" height="800px"></canvas>
+    </div>
+  </div>
+</div>
+<!-- partial -->
+  <script src='https://cdn.jsdelivr.net/gh/ospace/otools/dist/otools.min.js'></script>
+<script src='https://cdn.jsdelivr.net/gh/ospace/ographic/lib/pixcelcanvas.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
