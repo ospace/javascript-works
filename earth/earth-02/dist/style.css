@@ -1,0 +1,22 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.country {
+  fill: #26978c;
+  stroke-width: 0.05px;
+  stroke: darkgray;
+}
+.country:hover {
+  fill: red;
+}
+.sphere {
+  fill: white;
+  stroke: black;
+  stroke-width: 1px;
+}
+.pointer {
+  fill: #f00;
+}
