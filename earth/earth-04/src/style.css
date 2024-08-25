@@ -1,0 +1,16 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.country {
+  fill: #26978c;
+  stroke-width: 0.05px;
+}
+.country:hover {
+  fill: red;
+}
+.sphere {
+  fill: darkblue;
+}
