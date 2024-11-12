@@ -1,0 +1,38 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.country {
+  fill: #26978c;
+  stroke-width: 0.05px;
+  stroke: darkgray;
+}
+.country:hover {
+  fill: red;
+}
+.sphere {
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+}
+.pointer {
+  fill: #f00;
+}
+.graticule {
+  stroke: lightgray;
+  stroke-width: 0.5px;
+  fill: none;
+}
+.log {
+  table-layout: fixed;
+  display: table;
+  width: 352px;
+}
+.log_item {
+  display: table-cell;
+  border: 1px black solid;
+  font-family: sans-serif;
+  font-size: small;
+}
