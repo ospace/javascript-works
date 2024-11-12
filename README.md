@@ -18,3 +18,6 @@ jQuery기반 멀티셀렉터 컨트롤러 라이브러리
 
 HTML5 게임 프레임워크인 [phaser](https://phaser.io/)의 예제 연습용
 
+## earth
+
+d3-geo 사용 테스트
