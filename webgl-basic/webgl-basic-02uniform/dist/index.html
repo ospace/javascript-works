@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>webgl basic 02 - uniform</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec2 a_position;
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform vec2 u_resolution;
+  
+  void main() {
+    // 화면 해상도 좌표를 클립스페이스 좌표로 변환
+    vec2 nomalize = a_position / u_resolution;
+    vec2 clipSpace = nomalize * 2.0 - 1.0;
+    // 정점 셰이더에 위치
+    gl_Position = vec4(clipSpace, 0.0, 1.0);
+  }
+</script>
+<script type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform vec4 u_color;
+
+  void main() {
+    // 프레그먼트 셰이더의 색
+    gl_FragColor = u_color;
+    // gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+  }
+</script>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>
