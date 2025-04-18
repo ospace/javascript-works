@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>webgl basic 06 - multi-texture</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <img id='foo'>
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  
+  // 속성  
+  attribute vec2 a_position; // 위치 좌표
+  attribute vec2 a_texCoord; // 텍스처 좌표
+  
+  // 유니폼
+  uniform vec2 u_resolution; // 해상도
+  uniform vec2 u_flip; // 상하좌우 플립
+  
+  // 베링
+  varying vec2 v_texCoord; // 텍스트 좌표
+  
+  void main() {
+    vec2 clipSpace = a_position / u_resolution * 2.0 - 1.0;
+    clipSpace = clipSpace * u_flip;
+    gl_Position = vec4(clipSpace, 0, 1);
+    // 베링으로 복사
+    v_texCoord = a_texCoord;
+  }
+</script>
+<script type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+    
+  // 유니폼
+  // sampler2D에 의해서 로딩된 텍스트 이미지에 접근
+  uniform sampler2D u_image0; // 텍스처 이미지 유닛 0
+  uniform sampler2D u_image1; // 텍스처 이미지 유닛 1
+  
+    // 베링
+  varying vec2 v_texCoord; // 전달받은 텍스처 좌표
+
+  void main() {
+    vec4 color0 = texture2D(u_image0, v_texCoord);    
+    vec4 color1 = texture2D(u_image1, v_texCoord);    
+    
+    gl_FragColor = color0 * color1;
+  }
+</script>
+<!-- partial -->
+  <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
