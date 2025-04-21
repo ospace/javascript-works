@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>webgl basic 08 -  matrix 2d</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec2 a_position;
+  attribute vec4 a_color;
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform vec2 u_resolution; // 화면 해상도
+  uniform mat3 u_matrix; // 행렬
+    
+  // 베링을 사용해서 프레그먼트로 동일한 동명 배링으로 전달
+  varying vec4 v_color;
+  
+  void main() {
+    // 행렬 적용 & 정점 셰이더에 위치
+    gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+    // 베링으로 복사
+    v_color = a_color;
+  }
+</script>
+<script type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+    
+  // 전달받는 베링
+  varying vec4 v_color;
+
+  void main() {
+    // 프레그먼트 셰이더의 색
+    gl_FragColor = v_color;
+  }
+</script>
+<!-- partial -->
+  <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
