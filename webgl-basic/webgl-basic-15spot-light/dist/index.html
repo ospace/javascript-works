@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>webgl basic 15 - spot light</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+  attribute vec4 a_color;
+  attribute vec3 a_normal; // 법선벡터
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform mat4 u_matrix; // 행렬
+  uniform mat4 u_world; //환경 프로젝션 행렬
+  uniform vec3 u_pointLight; // 포인트 조명 위치
+  uniform vec3 u_viewWorld; // view world position
+    
+  // 베링을 사용해서 프레그먼트로 동일한 동명 배링으로 전달
+  varying vec4 v_color;
+  varying vec3 v_normal; // 법선벡터
+  varying vec3 v_surfaceToLight; // 빛->표면 벡터
+  varying vec3 v_surfaceToView; // 시점->표면 벡터
+  
+  void main() {
+    // 행렬 적용하고 정점 셰이더에 위치
+    gl_Position = u_matrix * a_position;
+    // 베링으로 복사
+    v_color = a_color;
+    // 회전/스케일 적용한 법선벡터를 셰이더로 전달
+    v_normal = mat3(u_world) * a_normal;
+    // v_normal = (u_world * vec4(a_normal,0)).xyz;
+    
+    // 표면과 월드 행렬을 곱해서 월드에서 표면 위치 구함
+    vec3 surfaceWorldPos = (u_world * a_position).xyz;
+    // 표면 법선과 포인트 조명 차이로 표면->빛 벡터 구함
+    v_surfaceToLight = u_pointLight - surfaceWorldPos;
+    // 표면->시점 벡터
+    v_surfaceToView = u_viewWorld - surfaceWorldPos;
+  }
+</script>
+<script type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  // uniform vec3 u_reverseLightDirection;
+  uniform vec4 u_color;
+  uniform float u_shininess;
+  uniform vec3 u_lightColor;     // color of linght
+  uniform vec3 u_specularColor;  // color of specular
+  uniform vec3 u_lightDirection; // 조명 방향!!
+  // uniform float u_lightLimit;    // 조명 범위!!
+  uniform float u_innerLimit;    // 조명 내부 한계
+  uniform float u_outerLimit;   // 조명 외부 한계
+    
+  // 전달받는 베링
+  varying vec4 v_color;
+  varying vec3 v_normal; // 전달받은 법선벡터
+  varying vec3 v_surfaceToLight; // 전달받은 표면->빛 벡터
+  varying vec3 v_surfaceToView;  // 전달받은 표면->시점 벡터
+
+  void main() {
+    // 단위벡터로 만듬
+    vec3 normal = normalize(v_normal);
+    vec3 surfaceToLight = normalize(v_surfaceToLight);
+    vec3 surfaceToView = normalize(v_surfaceToView);
+    vec3 halfVector = normalize(surfaceToLight + surfaceToView);
+
+    // 표면->빛 벡터와 빛 방향 벡터 내적!!
+    float dotFromDirection = dot(surfaceToLight, -u_lightDirection);
+    
+    // float light = 0.0;
+    // float specular = 0.0;
+    // 표면->빛 방향이 조명범위 안에 있는지 확인
+    // if (dotFromDirection >= u_lightLimit) {
+    //   light = dot(normal, surfaceToLight);
+    //   if (light > 0.0) {
+    //     specular = inLight * pow(dot(normal, halfVector), u_shininess);
+    //   }  
+    // }
+    // smoothstep(edge0, edge1, x)
+    // - 에르미트 보간법 0 ~ 1 범위를 edge0 < x <edge1 범위에 보간
+    float inLight = smoothstep(u_outerLimit, u_innerLimit, dotFromDirection);
+    float light = inLight * dot(normal, surfaceToLight);
+    float specular = inLight * pow(dot(normal, halfVector), u_shininess);
+    
+    // 프레그먼트 셰이더의 색
+    gl_FragColor = v_color;
+    // 색상채널에 빛 방향 곱하기
+    gl_FragColor.rgb *= light * u_lightColor;
+    // add specular
+    gl_FragColor.rgb += specular * u_specularColor;
+  }
+</script>
+<!-- partial -->
+  <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>

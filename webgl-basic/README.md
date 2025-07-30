@@ -50,3 +50,15 @@ orthographic으로 3차원 이동, 회전, 스케일을 적용
 
 카메라에서 바라볼 대상을 기준으로 카메라 위치와 방향 제어
 
+## webgl-basic-13direction-light
+
+Direction 조명을 사용한 렌더링
+
+## webgl-basic-14point-light
+
+Point 조명을 사용한 렌더링
+
+## webgl-basic-15spot-light
+
+Spot 조명을 사용한 렌더링
+
