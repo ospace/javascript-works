@@ -1,0 +1,57 @@
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+  attribute vec2 a_texcoord; // 텍스처 좌표
+  
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  // uniform mat4 u_matrix; // 행렬
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+    
+  // 베링을 사용해서 프레그먼트로 동일한 동명 배링으로 전달
+  varying vec2 v_texcoord; // 기본 텍스처 좌표
+  
+  void main() {
+    // 정점에 월드 행렬 적용
+    vec4 worldPosition = u_world * a_position;
+    
+    // 행렬 적용하고 정점 셰이더에 위치
+    // 정점에 나머지 행렬 적용
+    gl_Position = u_projection * u_view * worldPosition;
+    
+    v_texcoord = a_texcoord;
+  }
+</script>
+<script type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  uniform sampler2D u_texture; // 기본 텍스처
+  uniform vec4 u_colorMult; // 기본 텍스처 오버랩 색상
+    
+  // 전달받는 베링
+  varying vec2 v_texcoord; // 전달받은 텍스처 좌표
+
+  void main() {
+    // 기본 텍스처
+    gl_FragColor = texture2D(u_texture, v_texcoord) * u_colorMult;
+  }
+</script>

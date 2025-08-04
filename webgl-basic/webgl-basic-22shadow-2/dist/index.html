@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>webgl basic 22 - shadow 2</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script id="normal_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+  attribute vec2 a_texcoord; // 텍스처 좌표
+  attribute vec3 a_normal; // 법선벡터
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  // uniform mat4 u_matrix; // 행렬
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+  uniform mat4 u_textureMatrix; // 투영 텍스처 뷰행렬!!
+  uniform vec3 u_pointLight; // 포인트 라이트 행렬!!
+  uniform vec3 u_viewWorld; // view world position!!
+    
+  // 베링을 사용해서 프레그먼트로 동일한 동명 배링으로 전달
+  varying vec2 v_texcoord; // 기본 텍스처 좌표
+  varying vec4 v_projectedTexcoord; // 투영 텍스처 좌표
+  varying vec3 v_normal; // 법선벡터!!
+  varying vec3 v_surfaceToLight; // 빛->표면 벡터!!
+  varying vec3 v_surfaceToView; // 시점->표면 벡터!!
+  
+  void main() {
+    // 정점에 월드 행렬 적용
+    vec4 worldPosition = u_world * a_position;
+    
+    // 행렬 적용하고 정점 셰이더에 위치
+    // 정점에 나머지 행렬 적용
+    gl_Position = u_projection * u_view * worldPosition;
+    
+    v_texcoord = a_texcoord;
+    v_projectedTexcoord = u_textureMatrix * worldPosition;
+    
+    // spot light!!
+    v_normal = mat3(u_world) * a_normal;
+    v_surfaceToLight = u_pointLight - worldPosition.xyz;
+    v_surfaceToView = u_viewWorld - worldPosition.xyz;
+  }
+</script>
+<script id="normal_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  uniform sampler2D u_texture; // 기본 텍스처
+  uniform sampler2D u_projectedTexture; // 투영 텍스처
+  uniform vec4 u_colorMult; // 기본 텍스처 오버랩 색상
+  uniform vec3 u_lightDirection; // 조명 방향!!
+  // uniform float u_limit;
+  uniform float u_innerLimit;
+  uniform float u_outerLimit;
+  uniform float u_shininess;
+    
+  // 전달받는 베링
+  varying vec2 v_texcoord; // 전달받은 텍스처 좌표
+  varying vec4 v_projectedTexcoord; // 전달받은 투영 텍스처 좌표
+  varying vec3 v_normal; // 전달받은 법선벡터
+  varying vec3 v_surfaceToLight; // 전달받은 표면->빛 벡터
+  varying vec3 v_surfaceToView;  // 전달받은 표면->카메라 벡터
+  
+  void main() {
+    vec3 normal = normalize(v_normal);
+    vec3 surfaceToLight = normalize(v_surfaceToLight);
+    vec3 surfaceToView = normalize(v_surfaceToView);
+    vec3 halfVector = normalize(surfaceToLight + surfaceToView);
+    
+    float dotFromDirection = dot(surfaceToLight, -u_lightDirection);
+    float limitRange = u_innerLimit - u_outerLimit;
+    float inLight = clamp((dotFromDirection - u_outerLimit) / limitRange, 0.0, 1.0);
+    float light = inLight * dot(normal, surfaceToLight);
+    float specular = inLight * pow(dot(normal, halfVector), u_shininess);
+    
+    // 투영 텍스처 매핑에 원근 투영 적용
+    vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+    // 픽셀 깊이값!!
+    float pxDepth = projectedTexcoord.z - 0.002; // bias 추가 (uniform으로 입력 가능)!!
+    // 깊이 텍스처 r(Red)에서 깊이값!!
+    float texDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
+    // 투영 텍스처 범위내(-1~+1) 영역인지 판단
+    bool inRange = projectedTexcoord.x >= 0.0 && projectedTexcoord.x <= 1.0 &&
+        projectedTexcoord.y >= 0.0 && projectedTexcoord.y <= 1.0;
+    // 투영 범위내이고 깊입값보다 픽셀이 멀리있으면 픽셀이 그림자에 속하고 가까이 있다면 그림자가 아니다.!!
+    float shadowLight = (inRange && texDepth <= pxDepth) ? 0.2 : 1.0;  
+    // 기본 텍스처 색상 추출
+    vec4 texColor = texture2D(u_texture, v_texcoord) * u_colorMult;
+    // 그림자이면 빛을 막고 그림자가 아니면 빛을 통과시킴!!
+    gl_FragColor = vec4(
+      texColor.rgb * light * shadowLight + specular * shadowLight,
+      texColor.a
+    );
+    
+  }
+</script>
+<script id="base_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+    
+  // 데이터 저장할 유니폼(사용자정의)
+  // uniform mat4 u_matrix; // 행렬
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+  
+  void main() {
+    // 정점에 월드 행렬 적용
+    vec4 worldPosition = u_world * a_position;
+       
+    // 행렬 적용하고 정점 셰이더에 위치
+    gl_Position = u_projection * u_view * worldPosition;
+  }
+</script>
+<script id="base_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  uniform vec4 u_color; // 색상
+  
+  void main() {
+    // 기본 텍스처
+    gl_FragColor = u_color;
+  }
+</script>
+<!-- 아래는 깊이를 흉내내는 셰이더 -->
+<script id="depth_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+    
+  // 데이터 저장할 유니폼(사용자정의)
+  // uniform mat4 u_matrix; // 행렬
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+  
+  varying float v_z;
+    
+  void main() {
+    // 정점에 월드 행렬 적용
+    vec4 worldPosition = u_world * a_position;
+       
+    // 행렬 적용하고 정점 셰이더에 위치
+    gl_Position = u_projection * u_view * worldPosition;
+    v_z = (gl_Position.z + 1.0) / 2.0;
+  }
+</script>
+<script id="depth_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  varying float v_z;
+  /*
+  Note that this will produce shading which is nonlinear in the same way as the actual depth buffer values are nonlinear. If you want linear brightness from the near plane to the far plane, you'll need to take the z coordinate from just before the projection transform, and rescale it based on the near and far plane distance.
+  source: https://stackoverflow.com/questions/29066518/depth-image-webgl
+  */
+    
+  void main() {
+    gl_FragColor = vec4(v_z, v_z, v_z, 1.0);
+  }
+</script>
+<!-- partial -->
+  <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
