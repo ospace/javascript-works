@@ -1,0 +1,103 @@
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script id="normal_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float;
+  #endif
+  
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+  attribute vec3 a_normal; // 법선벡터
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+    
+  // 베링을 사용해서 프레그먼트로 동일한 동명 배링으로 전달
+  varying vec3 v_normal; // 법선벡터
+  varying vec3 v_position; // 정점위치
+  
+  void main() {
+    // 정점에 월드 행렬 적용
+    vec4 worldPosition = u_world * a_position;
+    
+    // 행렬 적용하고 정점 셰이더에 위치
+    // 정점에 나머지 행렬 적용
+    gl_Position = u_projection * u_view * worldPosition;
+    
+    v_normal = mat3(u_world) * a_normal;
+    v_position = worldPosition.xyz;
+  }
+</script>
+<script id="normal_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision highp float;
+  // precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  uniform samplerCube u_texture; // 큐브맵 텍스처!!
+  uniform vec3 u_viewWorld; // 시점 위치
+    
+  // 전달받는 베링
+  varying vec3 v_normal; // 전달받은 법선벡터
+  varying vec3 v_position; // 정점위치
+  
+  void main() {
+    vec3 normal = normalize(v_normal);
+    vec3 viewToSurface = normalize(v_position - u_viewWorld);
+    // reflect()가 반사공식 계산 함수!!
+    vec3 reflection = reflect(viewToSurface, normal);
+    gl_FragColor = textureCube(u_texture, reflection);
+  }
+</script>
+<script id="sky_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 속성 (사용자정의)
+  attribute vec4 a_position;
+  
+  // 전달받는 베링
+  varying vec4 v_position;
+  
+  void main() {
+    gl_Position = a_position;
+    gl_Position.z = 1.0;
+    
+    v_position = a_position;
+  }
+</script>
+<script id="sky_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정
+  #ifdef GL_ES
+  precision mediump float; // 중간 정밀도
+  #endif
+  
+  // 데이터 저장할 유니폼
+  uniform samplerCube u_skybox;
+  uniform mat4 u_viewProjectionInverse; // 원근 매핑에서 뷰관점 역행렬!!
+
+  // 전달받는 베링
+  varying vec4 v_position;
+  
+  void main() {
+    vec4 t = u_viewProjectionInverse * v_position; // 현재 정점이 텍스처 관점에서 벡터 계산!!
+    gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w)); // 깊이 고려해서 방향 계산!!
+  }
+</script>
