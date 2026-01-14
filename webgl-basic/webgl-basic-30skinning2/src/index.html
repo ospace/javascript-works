@@ -1,0 +1,102 @@
+<!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script id="normal_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  // 기본 정밀도 설정: check highp
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
+  
+  // 데이터 저장할 속성
+  attribute vec4 a_POSITION;
+  attribute vec3 a_NORMAL;
+  attribute vec4 a_WEIGHTS_0;
+  attribute vec4 a_JOINTS_0;
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+  uniform sampler2D u_texJoint;
+  uniform float u_nJoints;
+  
+  varying vec3 v_normal;
+  
+  // 이러한 오프셋은 텍스처가 가로로 4픽셀이라 가정합니다.
+  #define ROW_U(IDX) ((0.5+IDX) / 4.0)
+  
+  mat4 getBoneAt(float idx) {
+    float v = (idx + 0.5) / u_nJoints;
+    return mat4(
+      texture2D(u_texJoint, vec2(ROW_U(0.), v)),
+      texture2D(u_texJoint, vec2(ROW_U(1.), v)),
+      texture2D(u_texJoint, vec2(ROW_U(2.), v)),
+      texture2D(u_texJoint, vec2(ROW_U(3.), v))
+    );
+  }
+
+  void main() {
+    mat4 skin = 
+      a_WEIGHTS_0[0] * getBoneAt(a_JOINTS_0[0]) + 
+      a_WEIGHTS_0[1] * getBoneAt(a_JOINTS_0[1]) +
+      a_WEIGHTS_0[2] * getBoneAt(a_JOINTS_0[2]) +
+      a_WEIGHTS_0[3] * getBoneAt(a_JOINTS_0[3]);
+   
+   
+    // 정점에 월드 행렬 적용
+    // vec4 worldView = u_view * u_world * a_POSITION;
+    mat4 viewWorldSkin = u_view * u_world * skin;
+    // mat4 viewWorldSkin = u_view * u_world;
+    
+    gl_Position = u_projection * viewWorldSkin * a_POSITION;
+    // v_normal = mat3(viewWorldSkin) * a_NORMAL;
+    
+    // 단순 법선
+    v_normal = a_NORMAL;
+    // v_normal = mat3(u_world) * a_NORMAL;
+    
+    // 가중치 전달
+    // v_normal = a_WEIGHTS_0.xyz * 2. - 1.;
+    
+    // 조인트 범위 전달
+    // v_normal = a_JOINTS_0.xyz / (u_nJoints - 1.) * 2. - 1.;
+  }
+</script>
+<script id="normal_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정: check highp
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
+  
+  // 데이터 저장할 유니폼
+   // uniform vec4 u_color;
+  uniform vec4 u_diffuse;
+  uniform vec3 u_lightDir;
+  
+  varying vec3 v_normal;
+  
+  void main() {
+    // gl_FragColor = u_color;
+    vec3 normal = normalize(v_normal);
+    float light = dot(u_lightDir, normal) * .5 + .5;
+    
+    // 조명
+    gl_FragColor = vec4(u_diffuse.rgb * light, u_diffuse.a);
+    // gl_FragColor = u_diffuse;
+    // gl_FragColor.rgb *= light; 
+    
+    // 법선 색상
+    // gl_FragColor = vec4(normalize(v_normal) * .5 + .5, 1);
+  }
+</script>

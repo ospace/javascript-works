@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>webgl basic 29 - skinning1</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <!--
+Ref: https://webglfundamentals.org/
+-->
+<div class="wrapper">
+  <canvas id="c">Your browser does not seem to support HTML5 canvas.</canvas>
+</div>
+<script id="normal_vshader" type="x-shader/x-vertex">
+  #version 100
+  
+  // 기본 정밀도 설정: check highp
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
+  
+  // 데이터 저장할 속성
+  attribute vec4 a_position;
+  attribute vec4 a_weight;
+  attribute vec4 a_boneNdx;
+  
+  // 데이터 저장할 유니폼(사용자정의)
+  uniform mat4 u_projection; // 투영 행렬
+  uniform mat4 u_view; // 뷰 행렬
+  uniform mat4 u_world; // 월드 행렬
+
+  // uniform mat4 u_bones[4]; //!!
+  uniform sampler2D u_texBone; //!!
+  uniform float u_nBones; //!!
+  
+  // 이러한 오프셋은 텍스처가 가로로 4픽셀이라 가정합니다.
+  #define ROW_U(IDX) ((0.5+IDX) / 4.)
+  
+  mat4 getBoneAt(float idx) {
+    float v = (idx + 0.5) / u_nBones;
+    return mat4(
+      texture2D(u_texBone, vec2(ROW_U(0.), v)),
+      texture2D(u_texBone, vec2(ROW_U(1.), v)),
+      texture2D(u_texBone, vec2(ROW_U(2.), v)),
+      texture2D(u_texBone, vec2(ROW_U(3.), v))
+    );
+  }
+
+  void main() {
+  //   vec4 position = 
+  //     a_weight[0] * u_bones[int(a_boneNdx[0])] * a_position +
+  //     a_weight[1] * u_bones[int(a_boneNdx[1])] * a_position +
+  //     a_weight[2] * u_bones[int(a_boneNdx[2])] * a_position +
+  //     a_weight[3] * u_bones[int(a_boneNdx[3])] * a_position;
+
+    mat4 skin = 
+      a_weight[0] * getBoneAt(a_boneNdx[0]) +
+      a_weight[1] * getBoneAt(a_boneNdx[1]) +
+      a_weight[2] * getBoneAt(a_boneNdx[2]) +
+      a_weight[3] * getBoneAt(a_boneNdx[3]);
+
+    mat4 viewWorld = u_view * u_world;
+    // 정점에 월드 행렬 적용
+    // vec4 worldView = u_view * u_world * a_position;
+    vec4 position = viewWorld * skin * a_position;
+    
+    gl_Position = u_projection * position;
+  }
+</script>
+<script id="normal_fshader" type="x-shader/x-fragment">
+  #version 100
+  
+  // 기본 정밀도 설정: check highp
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+  #else
+  precision mediump float;
+  #endif
+  
+  // 데이터 저장할 유니폼
+   uniform vec4 u_color;
+  
+  void main() {
+    gl_FragColor = u_color;
+  }
+</script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js'></script><script  src="./script.js"></script>
+
+  </body>
+  
+</html>
